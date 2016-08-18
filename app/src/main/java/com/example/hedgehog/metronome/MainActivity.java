@@ -22,6 +22,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     Button mButton;
     NumberPicker numberPicker;
+    final int minValue = 200;
+    int maxValue = 2000;
+    final int step = 50;
+    static MainActivity mainActivity;
 
     static AsyncTask<Void,Void,Void> at;
     static int delay = 1000;
@@ -41,14 +45,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mainActivity = this;
         setContentView(R.layout.activity_main);
         mButton = (Button) findViewById(R.id.mButton);
         mButton.setOnClickListener(this);
 
         numberPicker = (NumberPicker) findViewById(R.id.numberPicker);
-        int minValue = 100;
-        int maxValue = 300;
-        int step = 20;
+
         String[] valueSet = new String[(maxValue - minValue) / step + 1];
 
         for (int i = 0; i < valueSet.length; i ++) {
@@ -56,14 +59,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         Log.d ("asdf", Arrays.toString(valueSet));
-       // numberPicker.setMinValue(minValue);
-      //  numberPicker.setMaxValue(maxValue);
-      //  numberPicker.setDisplayedValues(valueSet);
+        numberPicker.setMinValue(0);
+        numberPicker.setMaxValue(valueSet.length - 1);
+        numberPicker.setValue(20);
+        numberPicker.setDisplayedValues(valueSet);
 
         numberPicker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
             @Override
             public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
-                delay = newVal;
+                delay = newVal*step + minValue;
+              //  Log.d("asdf", " " + newVal);
             }
         });
 
@@ -89,7 +94,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    private void getCamera() {
+    private void playSound(){
+        mp = MediaPlayer.create(MainActivity.this, R.raw.metronome);
+        mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                mp.release();
+            }
+        });
+        mp.start();
+    }
+
+    private static void getCamera() {
         if (camera == null) {
             try {
                 camera = Camera.open();
@@ -105,7 +122,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (camera == null || params == null) {
                 return;
             }
-             //playSound();
+
             params = camera.getParameters();
             params.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
             camera.setParameters(params);
@@ -157,6 +174,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         protected void onProgressUpdate(Void... values) {
             vibrator.vibrate(duration);
+            mainActivity.playSound();
         }
     }
 }
