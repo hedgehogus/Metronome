@@ -11,6 +11,9 @@ import android.view.View;
 import android.widget.Button;
 import android.os.AsyncTask;
 import android.hardware.Camera.Parameters;
+import android.widget.NumberPicker;
+
+import java.util.Arrays;
 
 import javax.xml.datatype.Duration;
 
@@ -18,6 +21,8 @@ import javax.xml.datatype.Duration;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     Button mButton;
+    NumberPicker numberPicker;
+
     static AsyncTask<Void,Void,Void> at;
     static int delay = 1000;
     static int duration = 100;
@@ -39,6 +44,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
         mButton = (Button) findViewById(R.id.mButton);
         mButton.setOnClickListener(this);
+
+        numberPicker = (NumberPicker) findViewById(R.id.numberPicker);
+        int minValue = 100;
+        int maxValue = 300;
+        int step = 20;
+        String[] valueSet = new String[(maxValue - minValue) / step + 1];
+
+        for (int i = 0; i < valueSet.length; i ++) {
+            valueSet[i] = String.valueOf(i*step + minValue);
+        }
+
+        Log.d ("asdf", Arrays.toString(valueSet));
+       // numberPicker.setMinValue(minValue);
+      //  numberPicker.setMaxValue(maxValue);
+      //  numberPicker.setDisplayedValues(valueSet);
+
+        numberPicker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
+            @Override
+            public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
+                delay = newVal;
+            }
+        });
+
+
         vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
 
         hasFlash = getApplicationContext().getPackageManager()
@@ -105,8 +134,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             do {
 
-                turnOnFlash();
                 publishProgress();
+                turnOnFlash();
                 try {
                     Thread.sleep(duration);
                 } catch (InterruptedException e) {
